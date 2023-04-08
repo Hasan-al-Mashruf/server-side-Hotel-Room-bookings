@@ -3,6 +3,7 @@ const app = express()
 const cors = require('cors')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
+
 const port = 5000
 
 //middlewere
@@ -10,28 +11,30 @@ app.use(cors())
 app.use(express.json())
 
 
+
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = "mongodb+srv://admin:AY9lk1JG76fuMolY@cluster0.0e8wm8t.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-// jwt authorizations will be added very few soon
 
-// function verifyJWT(req, res, next) {
-//     const authHeader = req.headers.authorization
-//     console.log('authHeader', authHeader)
-//     if (!authHeader) {
-//         return res.status(401).send('unauthorised')
-//     }
-//     const token = authHeader.split(' ')[1]
-//     console.log('token', token)
-//     jwt.verify(token, 'fd23191b1843306712af74f6bbf937ad1c12bd4e3678dffad17fe69267cd7f59ff419bf0554dd2c2846b1855dc6f64f0a5a8516545b04c8284698192813a7476', function (err, decoded) {
-//         if (err) {
-//             res.status(404).send('unauthorised')
-//         }
-//         req.decoded = decoded
-//         next()
-//     });
-// }
+
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization
+    console.log('authHeader', authHeader)
+    if (authHeader === 'Bearer null') {
+        return res.status(401).send('unauthorised')
+    }
+    const token = authHeader.split(' ')[1]
+    
+    jwt.verify(token, process.env.SECRET_KEY, function (err, decoded) {
+        if (err) {
+            res.status(404).send('unauthorised')
+        }
+        req.decoded = decoded
+        next()
+    });
+}
+
 async function run() {
     const database = client.db("HotelBookings").collection("rooms");
     const guestList = client.db("HotelBookings").collection("guest");
@@ -80,8 +83,9 @@ async function run() {
 
         })
 
-        app.get('/roomDetails/:id', async (req, res) => {
+        app.get('/roomDetails/:id', verifyJWT, async (req, res) => {
             const token = req.headers.authorization
+            // console.log('token', token)
 
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
@@ -203,8 +207,8 @@ async function run() {
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email
-            const token = jwt.sign({ email }, 'fd23191b1843306712af74f6bbf937ad1c12bd4e3678dffad17fe69267cd7f59ff419bf0554dd2c2846b1855dc6f64f0a5a8516545b04c8284698192813a7476', { expiresIn: '1h' });
-            console.log(email, token)
+            console.log(email, email)
+            const token = jwt.sign({ email }, process.env.SECRET_KEY, { expiresIn: '1h' });
             res.send({ accessToken: token })
         })
 
