@@ -80,7 +80,6 @@ async function run() {
             }
 
             myFunction(res)
-
         })
 
         app.get('/roomDetails/:id', verifyJWT, async (req, res) => {
