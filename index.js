@@ -10,10 +10,10 @@ const port = 5000
 app.use(cors())
 app.use(express.json())
 
-
+const secretKey = process.env.SECRET_KEY
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const uri = "mongodb+srv://admin:AY9lk1JG76fuMolY@cluster0.0e8wm8t.mongodb.net/?retryWrites=true&w=majority";
+const uri =  `mongodb+srv://admin_booking-server-db:${secretKey}@cluster0.0e8wm8t.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
